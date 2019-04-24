@@ -1,38 +1,33 @@
-FROM ros:melodic
-
-RUN apt-get -y update && rm -rf /var/lib/apt/lists/ 
+FROM ros:melodic-ros-core
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-WORKDIR /root/
-
-RUN apt-get update && \ 
-    apt-get install -y wget && \
-    rm -rf /var/lib/apt/lists/*
-
-
 # Install catkin tools
-RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list' && \
+RUN apt-get update && \
+    apt-get install -y wget && \
+    sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list' && \
     wget http://packages.ros.org/ros.key -O - | apt-key add - && \
-    apt-get -y update && \
-    apt-get install -y python-rosdep python-catkin-tools
-
+    apt-get install -y python-rosdep python-catkin-tools && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get remove -y wget
 
 # Install ROS packages
-RUN source /ros_entrypoint.sh && \ 
-    apt-get -y update && \
-    apt-get install -y ros-melodic-tf2-tools ros-melodic-tf ros-melodic-joy ros-melodic-joy-teleop ros-melodic-roslint ros-melodic-xacro ros-melodic-robot-state-publisher ros-melodic-key-teleop
-
+RUN source /ros_entrypoint.sh && \
+    apt-get update && \ 
+    apt-get install -y ros-melodic-tf2-tools ros-melodic-tf ros-melodic-joy ros-melodic-joy-teleop ros-melodic-roslint ros-melodic-xacro ros-melodic-robot-state-publisher ros-melodic-key-teleop && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install libcreate
-RUN apt-get install -y build-essential cmake libboost-system-dev libboost-thread-dev && \
+RUN apt-get update && \
+    apt-get install -y build-essential cmake libboost-system-dev libboost-thread-dev && \
     cd ~ && \
     git clone https://github.com/AutonomyLab/libcreate.git && \
     cd libcreate && \
     mkdir build && cd build && \
     cmake .. && \
     make -j && \
-    make install
+    make install && \
+    rm -rf /var/lib/apt/lists/*
 
 # Make workspace
 RUN source /ros_entrypoint.sh && \
